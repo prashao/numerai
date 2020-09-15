@@ -27,6 +27,25 @@ I tried basic PCA + XGBoost first. PCA to reduce the data dimensionality (310 fe
 
 There are 310 features and many of the features are correlated(Numerai has infact grouped the columns into 6 categories) but it is highly possible that this correlation amongst features might be different across different eras. This was my hypothesis for going ahead with computing correlation clusters for each era of the training and validation sets. 
 
-The features for each era are clustered and then each era's clusters are compared with every other era's clusters based on few clustering comparison metrics like adjusted_mutual_info_score and adjusted_rand_score. The values range from [0,1] where 1 means 2 clusterings are perfectly similar. So eras whose clusterings exhibit a score greater than a threshold (like 0.7) are deemed to be similar to the era being compared. 
+### Cluster similarity
+The features for each era are clustered and then each of validation & test era's clusters are compared with every train & validation era's clusters based on few clustering comparison metrics like adjusted_mutual_info_score and adjusted_rand_score. The values range from [0,1] where 1 means 2 clusterings are perfectly similar. So eras whose clusterings exhibit a score greater than a threshold (like 0.7) are deemed to be similar to the era being compared. 
 
-To generate predictions for each test era and the live era, the original PCA + XGBoost pipeline is used on a subset of eras (selected by clustering comparison) 
+The source code for this is available in jupyter notebook - <b>correlation_clusters_solution.ipynb</b>
+One doesn't need to train the XGBoost regressor on the eras(the notebook does that but it is not required) as we are only interested in generating predictions for the 'live'(eraX) era each week. The rest of the predictions can be copied from the example_predictions that are present in the weekly dataset.
+
+### Final Model
+Final model is described in model.ipynb notebook. 
+The major steps are - 
+    
+    - Load the new dataset which will have an extra era in the test region(the last era)  
+    - Generate the correlation clusters for the live era using the saved cluster data. Only clusters 
+      from train and validation sets are required here.
+    - Find out the eras similar to the live era. The threshold for similarity can be adjusted
+    - Train an XGBoost regressor on the subset of the eras found in the previous step.
+    - Generate predictions for the live era
+    - Use example predictions and replace the live era predictions in that dataset with the generated predictions
+    
+
+
+
+ 
